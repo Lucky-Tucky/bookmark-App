@@ -24,7 +24,7 @@ This project focuses on **real-world authentication problems** and their solutio
 - Google OAuth Authentication
 - Secure Supabase session handling
 - Client-side & SSR-safe auth flow
-- Bookmark CRUD functionality
+- Bookmark Create, Read, Delete  functionality
 - Environment-based redirect handling
 - Production deployment on Vercel
 
@@ -53,3 +53,31 @@ app/
 lib/
  └─ supabaseClient.ts
 .env.local
+
+
+## Additional Problems Encountered
+
+### Issue: Real-Time Updates Not Reflecting Immediately
+**Issue:**  
+- Changes made to data were not appearing instantly in the application. Users had to refresh the page to see the updated information, which broke the real-time experience.
+
+**Cause:**  
+- Real-time listeners were not properly initialized.
+- State updates were not synchronized correctly after data changes.
+
+**Solution:**  
+-Implemented real-time database subscriptions using Supabase channels.
+- Updated application state directly within subscription callbacks to trigger re-rendering.
+---
+
+
+### Supabase OAuth Redirect URL Mismatch
+**Issue:**  
+Google OAuth redirected to an incorrect URL.
+
+**Cause:**  
+- Production redirect URL was missing in Supabase dashboard
+
+**Solution:**  
+- Added both local and production URLs in Supabase Auth Redirect settings
+
