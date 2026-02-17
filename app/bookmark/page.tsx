@@ -1,5 +1,7 @@
 "use client";
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
 
 interface Bookmark {
@@ -12,6 +14,7 @@ const initialBookmarks: Bookmark[] = [];
 
 export default function BookMarkList() {
 
+    const router = useRouter();
     const [bookmarks, setBookmarks] = useState<Bookmark[]>(initialBookmarks);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newTitle, setNewTitle] = useState('');
@@ -19,15 +22,21 @@ export default function BookMarkList() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [bookmarkToDelete, setBookmarkToDelete] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
 
     const hasBookmarks = bookmarks.length > 0;
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.replace('/');
+    };
+
     const handleAddBookmark = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newTitle && newUrl) {
+        if (newTitle && newUrl && user) {
             const { error } = await supabase
                 .from("bookmarks")
-                .insert({ title: newTitle, url: newUrl, user_id: 1 }).single();
+                .insert({ title: newTitle, url: newUrl, user_id: user.id }).single();
 
             if (error) {
                 console.error("Error adding bookmark:", error);
@@ -43,11 +52,12 @@ export default function BookMarkList() {
         setIsDeleteModalOpen(true);
     };
 
+
     const handleConfirmDelete = async () => {
-        if (bookmarkToDelete !== null) {
+        if (bookmarkToDelete !== null && user) {
             const { error } = await supabase.from("bookmarks")
                 .delete()
-                .eq("user_id", 1)
+                .eq("user_id", user.id)
                 .eq("id", bookmarkToDelete).single();
             if (error) {
                 console.error("Error deleting bookmark:", error);
@@ -61,42 +71,61 @@ export default function BookMarkList() {
         setIsDeleteModalOpen(false);
         setBookmarkToDelete(null);
     };
-
+    
     useEffect(() => {
-        setIsLoading(true);
-
-        const fetchBookmarks = async () => {
-            const { data, error } = await supabase
-                .from("bookmarks")
-                .select("*")
-                .eq("user_id", 1)
-                .order('created_at', { ascending: false });
-            if (error) {
-                console.error("Error fetching bookmarks:", error);
-            } else {
-                setBookmarks(data || []);
-            }
-            setIsLoading(false);
+        const getAndSetSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+            setIsLoading(false); // Initial auth check is done
         };
 
-        fetchBookmarks();
-        const channel = supabase.channel('realtime-bookmarks')
-        .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'bookmarks',
-            }, (payload) => {
-                console.log('Realtime payload:', payload); // should log INSERT/UPDATE/DELETE now
-                fetchBookmarks(); // update state
-            })
-            .subscribe((status) => console.log('Subscription status:', status));
+        getAndSetSession();
 
-
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
 
         return () => {
-            supabase.removeChannel(channel);
+            authListener.subscription.unsubscribe();
         };
     }, []);
+
+    useEffect(() => {
+        const userId = user?.id;
+
+        if (userId) {
+            const fetchBookmarks = async () => {
+                const { data, error } = await supabase
+                    .from("bookmarks")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .order('created_at', { ascending: false });
+                if (error) {
+                    console.error("Error fetching bookmarks:", error);
+                } else {
+                    setBookmarks(data || []);
+                }
+            };
+
+            fetchBookmarks();
+
+            const channel = supabase
+                .channel(`realtime-bookmarks-for-user-${userId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'bookmarks' },
+                    () => fetchBookmarks()
+                ).subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
+        }
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.replace('/');
+        }
+    }, [isLoading, user, router]);
 
     if (isLoading) {
         return (
@@ -109,13 +138,18 @@ export default function BookMarkList() {
     return (
         <div className="bg-white min-h-screen font-sans">
             <header className="p-4 border-b">
-                {hasBookmarks && (
-                    <div className="flex justify-start">
+                <div className="flex justify-between items-center">
+                    {hasBookmarks ? (
                         <button onClick={() => setIsModalOpen(true)} className="text-blue-500 bg-white border border-blue-500 py-2 px-4 rounded hover:bg-blue-500 hover:text-white transition-colors duration-300">
                             Create new book mark
                         </button>
-                    </div>
-                )}
+                    ) : (
+                        <div /> // Placeholder to keep logout button on the right
+                    )}
+                    <button onClick={handleLogout} className="text-gray-700 bg-white border border-gray-300 py-2 px-4 rounded hover:bg-gray-50 transition-colors duration-300">
+                        Logout
+                    </button>
+                </div>
             </header>
 
             <main className="p-8">
