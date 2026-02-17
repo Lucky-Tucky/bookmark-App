@@ -136,7 +136,7 @@ export default function BookMarkList() {
     }
 
     return (
-        <div className="bg-white min-h-screen font-sans">
+        <div className="relative bg-white min-h-screen font-sans pb-12">
             <header className="p-4 border-b">
                 <div className="flex justify-between items-center">
                     {hasBookmarks ? (
@@ -238,6 +238,9 @@ export default function BookMarkList() {
                     </div>
                 </div>
             )}
+            <footer className="absolute bottom-4 left-1/2 -translate-x-1/2 text-gray-600 text-sm">
+                Created by lakshaychauhan129@gmail.com
+            </footer>
         </div>
     );
 }

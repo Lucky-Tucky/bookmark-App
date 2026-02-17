@@ -16,7 +16,7 @@ export default function Home() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-200 bg-[length:200%_200%] animate-[gradient-animation_15s_ease_infinite]">
+        <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-200 bg-[length:200%_200%] animate-[gradient-animation_15s_ease_infinite]">
             <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl text-center">
                 <div className="space-y-2">
                     <h1 className="text-4xl font-bold text-gray-900">
@@ -39,6 +39,9 @@ export default function Home() {
                     </button>
                 </div>
             </div>
+            <footer className="absolute bottom-4 left-1/2 -translate-x-1/2 transform px-4 py-2 bg-gray-800/70 rounded-full text-white text-xs shadow-lg backdrop-blur-sm">
+                Created by lakshaychauhan129@gmail.com
+            </footer>
         </div>
     );
 }
