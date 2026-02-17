@@ -42,19 +42,6 @@ This project focuses on **real-world authentication problems** and their solutio
 
 ---
 
-## 📂 Project Structure
-
-```text
-app/
- ├─ bookmark/
- │   └─ page.tsx
- ├─ layout.tsx
- └─ page.tsx
-lib/
- └─ supabaseClient.ts
-.env.local
-
-
 ## Additional Problems Encountered
 
 ### Issue: Real-Time Updates Not Reflecting Immediately
@@ -81,3 +68,16 @@ Google OAuth redirected to an incorrect URL.
 **Solution:**  
 - Added both local and production URLs in Supabase Auth Redirect settings
 
+
+
+## 📂 Project Structure
+
+```text
+app/
+ ├─ bookmark/
+ │   └─ page.tsx
+ ├─ layout.tsx
+ └─ page.tsx
+lib/
+ └─ supabaseClient.ts
+.env.local
