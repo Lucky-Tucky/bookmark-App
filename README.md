@@ -46,9 +46,6 @@ This project focuses on **real-world authentication problems** and their solutio
 
 ```text
 app/
- ├─ auth/
- │   └─ callback/
- │       └─ page.tsx
  ├─ bookmark/
  │   └─ page.tsx
  ├─ layout.tsx
