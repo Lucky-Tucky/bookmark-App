@@ -1,15 +1,16 @@
 "use client";
 import { supabase } from '@/lib/supabase';
-import { useEffect } from 'react';
 
 export default function Home() {
     const handleGoogleSignIn = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
+
                 redirectTo: `${window.location.origin}/bookmark`,
+                
                 queryParams: {
-                    prompt: 'select_account',
+                    prompt: 'select_account', 
                 },
             },
         });
@@ -18,19 +19,6 @@ export default function Home() {
             console.error("Error signing in with Google:", error.message);
         }
     };
-
-    useEffect(() => {
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                window.location.replace('/bookmark');
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
-
 
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-200 bg-[length:200%_200%] animate-[gradient-animation_15s_ease_infinite]">
